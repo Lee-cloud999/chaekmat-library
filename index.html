@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>책맛서재</title>
+<meta name="description" content="책을 맛보듯 읽고, 마음에 남은 문장을 모아 두는 나만의 작은 서재">
+<meta name="theme-color" content="#f6efe3">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<style>
+:root{
+  --paper:#f6efe3; --paper2:#fbf7f0; --card:#fffdf9;
+  --ink:#3b2f27; --ink2:#7a6a5d; --line:#e5d9c7;
+  --wood:#b07a4f; --wood-dark:#7d5235; --wood-light:#d9b48a;
+  --berry:#c8553d; --berry-soft:#f3d9cf;
+  --want:#8aa6c1; --reading:#e0a64b; --done:#7fa36b;
+  --shadow:0 2px 10px rgba(80,52,30,.10);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:'Gowun Dodum',system-ui,sans-serif; font-size:15px; line-height:1.55;
+  min-height:100vh; padding-bottom:calc(76px + env(safe-area-inset-bottom));
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.serif{font-family:'Gowun Batang',serif}
+
+/* header */
+header{
+  position:sticky;top:0;z-index:20;background:rgba(246,239,227,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.head-in{max-width:1080px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:baseline;gap:8px;font-family:'Gowun Batang',serif;font-weight:700;font-size:22px;letter-spacing:-.5px}
+.logo small{font-family:'Gowun Dodum';font-weight:400;font-size:12px;color:var(--ink2)}
+.head-in .grow{flex:1}
+.icon-btn{border:1px solid var(--line);background:var(--card);border-radius:999px;width:38px;height:38px;display:grid;place-items:center;font-size:17px}
+.icon-btn:hover{border-color:var(--wood-light)}
+
+main{max-width:1080px;margin:0 auto;padding:18px 16px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px}
+@media (max-width:520px){.stat{padding:8px 8px;text-align:center}.stat span{font-size:11px;display:block;line-height:1.3}}
+.stat b{display:block;font-family:'Gowun Batang',serif;font-size:22px}
+.stat span{font-size:12px;color:var(--ink2)}
+
+/* tabs (bottom on mobile, top on desktop) */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);
+  display:flex;padding-bottom:env(safe-area-inset-bottom);
+}
+nav.tabs button{flex:1;border:0;background:none;padding:9px 4px 10px;font-size:12px;color:var(--ink2);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav.tabs button .ic{font-size:19px;line-height:1.2}
+nav.tabs button.on{color:var(--berry)}
+@media (min-width:760px){
+  body{padding-bottom:30px}
+  nav.tabs{position:static;border:0;background:none;max-width:1080px;margin:0 auto;padding:12px 16px 0;gap:6px}
+  nav.tabs button{flex:0 0 auto;flex-direction:row;gap:6px;font-size:14px;padding:8px 16px;border-radius:999px;border:1px solid transparent}
+  nav.tabs button .ic{font-size:15px}
+  nav.tabs button.on{background:var(--card);border-color:var(--line);color:var(--ink)}
+}
+.view{display:none}.view.on{display:block}
+
+h2.sec{font-family:'Gowun Batang',serif;font-size:19px;margin:6px 0 12px;display:flex;align-items:center;gap:8px}
+.muted{color:var(--ink2)}
+.empty{text-align:center;color:var(--ink2);padding:40px 16px;border:1.5px dashed var(--line);border-radius:var(--radius);background:var(--paper2)}
+.empty .big{font-size:36px;margin-bottom:6px}
+
+/* bookshelf */
+.shelf-wrap{background:linear-gradient(#ead9c2,#e3cdb1);border-radius:18px;padding:18px 16px 6px;box-shadow:inset 0 0 0 6px var(--wood-light),inset 0 0 0 10px var(--wood),var(--shadow)}
+.shelf-row{display:flex;align-items:flex-end;gap:3px;min-height:150px;padding:0 10px;position:relative;overflow-x:auto;scrollbar-width:thin}
+.shelf-row::after{content:"";position:sticky;right:0}
+.plank{height:14px;margin:0 -6px 16px;background:linear-gradient(var(--wood),var(--wood-dark));border-radius:3px;box-shadow:0 4px 6px rgba(70,40,20,.25)}
+.spine{
+  flex:0 0 auto;width:34px;border:0;border-radius:3px 3px 1px 1px;padding:10px 0 8px;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  color:#fff;font-family:'Gowun Batang',serif;font-size:12.5px;line-height:1.15;
+  box-shadow:inset -3px 0 0 rgba(0,0,0,.12),inset 2px 0 0 rgba(255,255,255,.18);
+  transition:transform .15s;
+}
+.spine:hover,.spine:focus-visible{transform:translateY(-8px)}
+.spine .t{writing-mode:vertical-rl;text-orientation:upright;flex:1;min-height:0;white-space:nowrap;overflow:hidden;letter-spacing:1px;text-shadow:0 1px 1px rgba(0,0,0,.25)}
+.spine .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85;flex:0 0 auto}
+.spine.st-want .dot{background:var(--want)}
+.spine.st-reading .dot{background:var(--reading)}
+.spine.st-done .dot{background:var(--done)}
+.spine::before{content:"";position:absolute;left:0;right:0;top:14%;height:2px;background:rgba(255,255,255,.35)}
+.shelf-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink2);margin:10px 2px 0}
+.shelf-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+
+/* board */
+.board{display:grid;grid-template-columns:1fr;gap:14px}
+@media (min-width:760px){.board{grid-template-columns:repeat(3,1fr)}}
+.col{background:var(--paper2);border:1px solid var(--line);border-radius:var(--radius);padding:12px;min-height:120px;transition:background .15s,border-color .15s}
+.col.over{background:var(--berry-soft);border-color:var(--berry)}
+.col-head{display:flex;align-items:center;gap:8px;font-weight:700;margin:0 2px 10px}
+.col-head i{width:10px;height:10px;border-radius:50%}
+.col-head .n{margin-left:auto;font-weight:400;font-size:12px;color:var(--ink2);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:0 9px}
+.cards{display:flex;flex-direction:column;gap:8px;min-height:40px}
+.bcard{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:var(--shadow);cursor:grab;text-align:left;width:100%}
+.bcard:active{cursor:grabbing}
+.bcard.dragging{opacity:.4}
+.cover{flex:0 0 auto;width:44px;height:62px;border-radius:4px;object-fit:cover;background:var(--line);display:grid;place-items:center;color:#fff;font-family:'Gowun Batang',serif;font-size:11px;text-align:center;padding:3px;overflow:hidden;box-shadow:1px 1px 3px rgba(0,0,0,.15)}
+.bcard .info{min-width:0;flex:1}
+.bcard .ti{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard .au{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bcard .q{font-size:11px;color:var(--berry);margin-top:2px}
+.col-empty{font-size:12px;color:var(--ink2);text-align:center;padding:14px 4px}
+
+/* quotes */
+.quotes{columns:1;column-gap:14px}
+@media (min-width:640px){.quotes{columns:2}}
+@media (min-width:960px){.quotes{columns:3}}
+.qcard{break-inside:avoid;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 12px;margin:0 0 14px;box-shadow:var(--shadow);position:relative}
+.qcard::before{content:"“";position:absolute;top:-6px;left:10px;font-family:'Gowun Batang',serif;font-size:46px;color:var(--berry-soft)}
+.qcard .txt{font-family:'Gowun Batang',serif;font-size:15.5px;line-height:1.75;white-space:pre-wrap;position:relative}
+.qcard .src{margin-top:10px;font-size:12px;color:var(--ink2);display:flex;gap:6px;align-items:center}
+.qcard .src button{margin-left:auto;border:0;background:none;color:var(--wood);font-size:12px;padding:2px 4px}
+
+/* search */
+.searchbar{display:flex;gap:8px;margin-bottom:12px}
+.searchbar input{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:11px 16px;outline:none}
+.searchbar input:focus{border-color:var(--wood-light)}
+.btn{border:0;background:var(--berry);color:#fff;border-radius:999px;padding:10px 18px;font-weight:700;white-space:nowrap}
+.btn:hover{filter:brightness(1.05)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line);font-weight:400}
+.btn.sm{padding:6px 12px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+.notice{background:var(--berry-soft);border-radius:12px;padding:12px 14px;font-size:13.5px;margin-bottom:12px}
+.notice a,.notice button.link{color:var(--berry);font-weight:700;background:none;border:0;padding:0;text-decoration:underline}
+.results{display:grid;grid-template-columns:1fr;gap:10px}
+@media (min-width:640px){.results{grid-template-columns:1fr 1fr}}
+.rcard{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px}
+.rcard .cover{width:58px;height:82px}
+.rcard .info{flex:1;min-width:0;display:flex;flex-direction:column}
+.rcard .ti{font-weight:700;line-height:1.35}
+.rcard .meta{font-size:12px;color:var(--ink2);margin:2px 0 8px}
+.rcard .acts{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--paper2);border-radius:999px;padding:4px 10px;font-size:12.5px}
+.chip:hover{border-color:var(--wood-light)}
+.chip.added{background:var(--done);color:#fff;border-color:var(--done);cursor:default}
+.more{display:block;margin:14px auto 0}
+details.manual{margin-top:20px;background:var(--paper2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px}
+details.manual summary{cursor:pointer;font-weight:700}
+.form{display:grid;gap:8px;margin-top:10px}
+.form input,.form textarea,.form select{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;outline:none;width:100%}
+.form input:focus,.form textarea:focus{border-color:var(--wood-light)}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.swatch{width:26px;height:26px;border-radius:50%;border:2px solid transparent;padding:0}
+.swatch.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--card) inset}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(50,35,25,.45);z-index:50;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.on{display:flex}
+.modal{background:var(--paper);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));animation:up .2s ease-out}
+@media (min-width:640px){.modal-bg{align-items:center}.modal{border-radius:20px}}
+@keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
+.m-top{display:flex;gap:14px}
+.m-top .cover{width:82px;height:116px;font-size:13px}
+.m-top h3{font-family:'Gowun Batang',serif;margin:0 0 4px;font-size:19px;line-height:1.35}
+.m-close{margin-left:auto;align-self:flex-start}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;margin:14px 0 4px}
+.seg button{flex:1;border:0;background:none;border-radius:999px;padding:7px 4px;font-size:13.5px;color:var(--ink2)}
+.seg button.on{color:#fff;font-weight:700}
+.seg button.on[data-s=want]{background:var(--want)}
+.seg button.on[data-s=reading]{background:var(--reading)}
+.seg button.on[data-s=done]{background:var(--done)}
+.m-sec{margin-top:18px}
+.m-sec h4{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:6px}
+.mq{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--berry);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-family:'Gowun Batang',serif;white-space:pre-wrap;position:relative}
+.mq .pg{display:block;font-family:'Gowun Dodum';font-size:11.5px;color:var(--ink2);margin-top:4px}
+.mq .del{position:absolute;top:4px;right:6px;border:0;background:none;color:var(--ink2);font-size:14px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.danger{color:var(--berry);background:none;border:0;font-size:13px;text-decoration:underline;padding:0}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (min-width:760px){.toast{bottom:30px}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--berry);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{max-width:1080px;margin:30px auto 0;padding:0 16px;font-size:12px;color:var(--ink2);text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="logo">📚 책맛서재 <small>책을 맛보는 작은 서재</small></div>
+    <div class="grow"></div>
+    <button class="icon-btn" id="btnSettings" aria-label="설정" title="설정">⚙️</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-v="shelf" class="on"><span class="ic">📚</span>서재</button>
+  <button data-v="board"><span class="ic">🗂️</span>독서 보드</button>
+  <button data-v="quotes"><span class="ic">✍️</span>문장 서랍</button>
+  <button data-v="search"><span class="ic">🔍</span>책 담기</button>
+</nav>
+
+<main>
+  <!-- 서재 -->
+  <section class="view on" id="v-shelf">
+    <div class="stats" id="stats"></div>
+    <div id="shelfArea"></div>
+  </section>
+
+  <!-- 보드 -->
+  <section class="view" id="v-board">
+    <h2 class="sec">🗂️ 독서 보드 <span class="muted" style="font-size:13px;font-weight:400">카드를 끌어서 옮기거나, 눌러서 상태를 바꿔요</span></h2>
+    <div class="board" id="board"></div>
+  </section>
+
+  <!-- 문장 -->
+  <section class="view" id="v-quotes">
+    <h2 class="sec">✍️ 문장 서랍</h2>
+    <div id="quotesArea"></div>
+  </section>
+
+  <!-- 검색 -->
+  <section class="view" id="v-search">
+    <h2 class="sec">🔍 책 담기</h2>
+    <div id="keyNotice"></div>
+    <form class="searchbar" id="searchForm">
+      <input id="q" type="search" placeholder="책 제목이나 지은이를 검색해요" autocomplete="off">
+      <button class="btn" type="submit">검색</button>
+    </form>
+    <div id="results"></div>
+    <details class="manual" id="manualBox">
+      <summary>✏️ 검색에 없는 책 직접 담기</summary>
+      <form class="form" id="manualForm">
+        <input id="mTitle" placeholder="책 제목 (필수)" required>
+        <input id="mAuthor" placeholder="지은이">
+        <input id="mPub" placeholder="출판사">
+        <div>
+          <div class="muted" style="font-size:12px;margin-bottom:6px">책등 색깔</div>
+          <div class="swatches" id="mSwatches"></div>
+        </div>
+        <select id="mStatus">
+          <option value="want">읽고 싶은 책</option>
+          <option value="reading">읽는 중</option>
+          <option value="done">다 읽음</option>
+        </select>
+        <button class="btn" type="submit">서재에 꽂기</button>
+      </form>
+    </details>
+  </section>
+</main>
+
+<footer>책맛서재 · 기획 이나은 · 책 정보 제공: Kakao Daum 검색</footer>
+
+<!-- 책 상세 -->
+<div class="modal-bg" id="bookModal" role="dialog" aria-modal="true">
+  <div class="modal" id="bookModalBody"></div>
+</div>
+
+<!-- 설정 -->
+<div class="modal-bg" id="setModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="m-top" style="align-items:center">
+      <h3 class="serif" style="margin:0">⚙️ 설정</h3>
+      <button class="icon-btn m-close" data-close>✕</button>
+    </div>
+    <div class="m-sec">
+      <h4>🔑 카카오 REST API 키</h4>
+      <p class="muted" style="font-size:13px;margin:0 0 8px">책 검색에 쓰여요. 키는 이 기기의 브라우저에만 저장되고, 어디에도 올라가지 않아요.<br>
+        <a href="https://developers.kakao.com/console/app" target="_blank" rel="noopener" style="color:var(--berry)">카카오디벨로퍼스에서 키 확인하기 ↗</a></p>
+      <div class="row">
+        <input id="keyInput" type="password" placeholder="REST API 키 붙여넣기" style="border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 12px;outline:none" autocomplete="off">
+        <button class="btn" id="keySave" style="flex:0 0 auto">저장</button>
+      </div>
+      <div id="keyState" class="muted" style="font-size:12.5px;margin-top:6px"></div>
+    </div>
+    <div class="m-sec">
+      <h4>💾 백업</h4>
+      <p class="muted" style="font-size:13px;margin:0 0 8px">서재 기록은 이 기기에 저장돼요. 기기를 바꾸거나 브라우저 기록을 지우기 전에 백업 파일을 받아 두세요.</p>
+      <div class="row">
+        <button class="btn ghost" id="exportBtn">백업 파일 받기</button>
+        <button class="btn ghost" id="importBtn">백업 불러오기</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- 저장소 ---------- */
+const DATA_KEY = 'chaekmat.v1';
+const API_KEY = 'chaekmat.kakaoKey';
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+};
+let books = [];
+try{ books = JSON.parse(store.get(DATA_KEY) || '[]'); if(!Array.isArray(books)) books = []; }catch(e){ books = []; }
+let memOnly = false;
+function save(){
+  if(!store.set(DATA_KEY, JSON.stringify(books)) && !memOnly){
+    memOnly = true; toast('이 브라우저에서는 저장이 안 돼요. 백업 파일을 꼭 받아 두세요');
+  }
+}
+
+/* ---------- 상수/도구 ---------- */
+const STATUS = {
+  want:{label:'읽고 싶은 책', color:'var(--want)', emoji:'🌱'},
+  reading:{label:'읽는 중', color:'var(--reading)', emoji:'📖'},
+  done:{label:'다 읽음', color:'var(--done)', emoji:'🍽️'}
+};
+const SPINES = ['#c8553d','#b07a4f','#6f8f72','#5d7a99','#a8687a','#d49a3a','#7d6b9e','#4f7f80','#9b5b3a','#86956a','#c9776b','#59606e'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const localDate = iso => { if(!iso) return ''; const d=new Date(iso); if(isNaN(d)) return ''; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+function hashColor(str){ let h=0; for(const c of String(str)) h=(h*31+c.charCodeAt(0))|0; return SPINES[Math.abs(h)%SPINES.length]; }
+function coverHTML(b, cls='cover'){
+  const img = b.thumbnail ? `<img src="${esc(b.thumbnail)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : '';
+  return `<div class="${cls}" style="background:${b.color};position:relative">${esc(String(b.title).slice(0,14))}${img}</div>`;
+}
+let toastT;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),2200); }
+
+/* ---------- 탭 ---------- */
+let view = 'shelf';
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  go(b.dataset.v);
+});
+function go(v){
+  view = v;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.v===v));
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id==='v-'+v));
+  render();
+  if(v==='search') setTimeout(()=>$('#q').focus(), 50);
+  window.scrollTo({top:0});
+}
+
+/* ---------- 렌더 ---------- */
+function render(){
+  renderStats();
+  if(view==='shelf') renderShelf();
+  if(view==='board') renderBoard();
+  if(view==='quotes') renderQuotes();
+  if(view==='search') renderKeyNotice();
+}
+
+function renderStats(){
+  const c = s => books.filter(b=>b.status===s).length;
+  const q = books.reduce((n,b)=>n+(b.quotes?.length||0),0);
+  $('#stats').innerHTML = `
+    <div class="stat"><b>${c('done')}</b><span>🍽️ 맛본 책</span></div>
+    <div class="stat"><b>${c('reading')}</b><span>📖 읽는 중</span></div>
+    <div class="stat"><b>${c('want')}</b><span>🌱 읽을 책</span></div>
+    <div class="stat"><b>${q}</b><span>✍️ 모은 문장</span></div>`;
+}
+
+function renderShelf(){
+  const area = $('#shelfArea');
+  if(!books.length){
+    area.innerHTML = `<div class="empty"><div class="big">🪵</div>아직 책장이 비어 있어요.<br>첫 책을 꽂아 볼까요?<br><br><button class="btn" data-go="search">책 담으러 가기</button></div>`;
+    return;
+  }
+  // 다 읽음 → 읽는 중 → 읽고 싶은 책 순서로 꽂기
+  const order = {done:0,reading:1,want:2};
+  const sorted = [...books].sort((a,b)=> order[a.status]-order[b.status] || (a.addedAt<b.addedAt?-1:1));
+  const perRow = Math.max(8, Math.floor((Math.min(window.innerWidth,1080)-80)/37));
+  let rows = '';
+  for(let i=0;i<sorted.length;i+=perRow){
+    const spines = sorted.slice(i,i+perRow).map(b=>{
+      const h = 118 + (Math.abs([...b.id].reduce((n,c)=>n+c.charCodeAt(0),0))%28);
+      return `<button class="spine st-${b.status}" data-open="${b.id}" style="height:${h}px;background:${b.color}" title="${esc(b.title)}"><span class="t">${esc(b.title)}</span><span class="dot"></span></button>`;
+    }).join('');
+    rows += `<div class="shelf-row">${spines}</div><div class="plank"></div>`;
+  }
+  area.innerHTML = `<h2 class="sec">📚 나의 책장</h2><div class="shelf-wrap">${rows}</div>
+    <div class="shelf-legend"><span><i style="background:var(--done)"></i>다 읽음</span><span><i style="background:var(--reading)"></i>읽는 중</span><span><i style="background:var(--want)"></i>읽고 싶은 책</span><span>· 책등을 누르면 기록을 볼 수 있어요</span></div>`;
+}
+
+function renderBoard(){
+  $('#board').innerHTML = Object.entries(STATUS).map(([s,info])=>{
+    const list = books.filter(b=>b.status===s).sort((a,b)=>(b.updatedAt||'')>(a.updatedAt||'')?1:-1);
+    const cards = list.map(b=>`
+      <div class="bcard" draggable="true" data-id="${b.id}" data-open="${b.id}" role="button" tabindex="0">
+        ${coverHTML(b)}
+        <div class="info">
+          <div class="ti">${esc(b.title)}</div>
+          <div class="au">${esc(b.authors || '지은이 미상')}</div>
+          ${b.quotes?.length ? `<div class="q">✍️ 문장 ${b.quotes.length}개</div>` : ''}
+        </div>
+      </div>`).join('');
+    return `<div class="col" data-status="${s}">
+      <div class="col-head"><i style="background:${info.color}"></i>${info.emoji} ${info.label}<span class="n">${list.length}</span></div>
+      <div class="cards">${cards || '<div class="col-empty">여기로 책을 끌어 놓아요</div>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuotes(){
+  const all = [];
+  books.forEach(b => (b.quotes||[]).forEach(q => all.push({q,b})));
+  all.sort((x,y)=> (y.q.createdAt||'')>(x.q.createdAt||'')?1:-1);
+  if(!all.length){
+    $('#quotesArea').innerHTML = `<div class="empty"><div class="big">✍️</div>아직 모은 문장이 없어요.<br>책을 눌러 마음에 남은 문장을 적어 보세요.</div>`;
+    return;
+  }
+  $('#quotesArea').innerHTML = `<div class="quotes">${all.map(({q,b})=>`
+    <div class="qcard">
+      <div class="txt">${esc(q.text)}</div>
+      <div class="src">— ${esc(b.title)}${q.page?` · p.${esc(q.page)}`:''}<button data-open="${b.id}">책 보기</button></div>
+    </div>`).join('')}</div>`;
+}
+
+/* ---------- 공통 클릭 ---------- */
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]'); if(g){ go(g.dataset.go); return; }
+  const o = e.target.closest('[data-open]'); if(o && !dragMoved){ openBook(o.dataset.open); return; }
+  const c = e.target.closest('[data-close]'); if(c){ closeModals(); return; }
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') closeModals();
+  if((e.key==='Enter'||e.key===' ') && e.target.matches('.bcard')){ e.preventDefault(); openBook(e.target.dataset.open); }
+});
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', e => { if(e.target===m) closeModals(); }));
+function closeModals(){ document.querySelectorAll('.modal-bg').forEach(m=>m.classList.remove('on')); openId=null; render(); }
+
+/* ---------- 드래그 (보드) ---------- */
+let dragId = null, dragMoved = false;
+$('#board').addEventListener('dragstart', e => {
+  const c = e.target.closest('.bcard'); if(!c) return;
+  dragId = c.dataset.id; dragMoved = true; c.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  try{ e.dataTransfer.setData('text/plain', dragId); }catch(_){}
+});
+$('#board').addEventListener('dragend', e => {
+  e.target.closest('.bcard')?.classList.remove('dragging');
+  document.querySelectorAll('.col.over').forEach(c=>c.classList.remove('over'));
+  setTimeout(()=>{ dragMoved=false; }, 50);
+});
+$('#board').addEventListener('dragover', e => {
+  const col = e.target.closest('.col'); if(!col || !dragId) return;
+  e.preventDefault();
+  document.querySelectorAll('.col.over').forEach(c=>{ if(c!==col) c.classList.remove('over'); });
+  col.classList.add('over');
+});
+$('#board').addEventListener('drop', e => {
+  const col = e.target.closest('.col'); if(!col || !dragId) return;
+  e.preventDefault();
+  setStatus(dragId, col.dataset.status);
+  dragId = null;
+});
+
+function setStatus(id, s){
+  const b = books.find(x=>x.id===id); if(!b || b.status===s) return;
+  const prev = b.status;
+  b.status = s; b.updatedAt = new Date().toISOString();
+  if(s==='reading' && !b.startedAt) b.startedAt = today();
+  if(s==='done'){ b.finishedAt = today(); }
+  save(); render();
+  if(s==='done' && prev!=='done'){
+    const n = books.filter(x=>x.status==='done').length;
+    toast(`🍽️ 한 권 맛봤어요! 지금까지 ${n}권`);
+  } else toast(`${STATUS[s].emoji} ${STATUS[s].label}(으)로 옮겼어요`);
+}
+
+/* ---------- 책 상세 ---------- */
+let openId = null;
+function openBook(id){
+  const b = books.find(x=>x.id===id); if(!b) return;
+  openId = id;
+  renderBookModal();
+  $('#bookModal').classList.add('on');
+}
+function renderBookModal(){
+  const b = books.find(x=>x.id===openId); if(!b) return;
+  const dates = [b.startedAt && `읽기 시작 ${b.startedAt}`, b.finishedAt && b.status==='done' && `다 읽음 ${b.finishedAt}`].filter(Boolean).join(' · ');
+  $('#bookModalBody').innerHTML = `
+    <div class="m-top">
+      ${coverHTML(b)}
+      <div style="min-width:0;flex:1">
+        <h3>${esc(b.title)}</h3>
+        <div class="muted" style="font-size:13px">${esc(b.authors||'지은이 미상')}${b.publisher?` · ${esc(b.publisher)}`:''}</div>
+        ${dates?`<div class="muted" style="font-size:12px;margin-top:6px">${dates}</div>`:''}
+        ${b.url?`<a href="${esc(b.url)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--wood)">책 정보 보기 ↗</a>`:''}
+      </div>
+      <button class="icon-btn m-close" data-close aria-label="닫기">✕</button>
+    </div>
+    <div class="seg" id="seg">
+      ${Object.entries(STATUS).map(([s,i])=>`<button data-s="${s}" class="${b.status===s?'on':''}">${i.emoji} ${i.label}</button>`).join('')}
+    </div>
+    <div class="m-sec">
+      <h4>✍️ 마음에 남은 문장 <span class="muted" style="font-weight:400">${b.quotes?.length||0}</span></h4>
+      <div id="mqList">${(b.quotes||[]).map(q=>`
+        <div class="mq">${esc(q.text)}${q.page?`<span class="pg">p.${esc(q.page)}</span>`:''}<button class="del" data-delq="${q.id}" aria-label="문장 지우기">✕</button></div>`).join('') || '<div class="muted" style="font-size:13px;margin-bottom:8px">아직 적은 문장이 없어요.</div>'}</div>
+      <form class="form" id="qForm" style="margin-top:6px">
+        <textarea id="qText" rows="3" placeholder="밑줄 긋고 싶은 문장을 적어요" required></textarea>
+        <div class="row">
+          <input id="qPage" placeholder="쪽 (선택)" inputmode="numeric" style="max-width:120px">
+          <button class="btn" type="submit">문장 넣기</button>
+        </div>
+      </form>
+    </div>
+    <div class="m-sec" style="display:flex;justify-content:space-between;align-items:center">
+      <span class="muted" style="font-size:12px">담은 날 ${esc(localDate(b.addedAt))}</span>
+      <button class="danger" id="delBook">서재에서 빼기</button>
+    </div>`;
+  $('#seg').onclick = e => { const s=e.target.closest('button')?.dataset.s; if(s){ setStatus(b.id, s); renderBookModal(); } };
+  $('#qForm').onsubmit = e => {
+    e.preventDefault();
+    const text = $('#qText').value.trim(); if(!text) return;
+    b.quotes = b.quotes || [];
+    b.quotes.push({id:uid(), text, page:$('#qPage').value.trim(), createdAt:new Date().toISOString()});
+    b.updatedAt = new Date().toISOString();
+    save(); renderBookModal(); renderStats(); toast('✍️ 문장 서랍에 넣었어요');
+  };
+  $('#mqList').onclick = e => {
+    const d = e.target.closest('[data-delq]'); if(!d) return;
+    if(!confirm('이 문장을 지울까요?')) return;
+    b.quotes = b.quotes.filter(q=>q.id!==d.dataset.delq);
+    save(); renderBookModal(); renderStats();
+  };
+  $('#delBook').onclick = () => {
+    if(!confirm(`'${b.title}'을(를) 서재에서 뺄까요?\n적어 둔 문장도 함께 지워져요.`)) return;
+    books = books.filter(x=>x.id!==b.id); save(); closeModals(); toast('서재에서 뺐어요');
+  };
+}
+
+/* ---------- 책 추가 ---------- */
+function addBook(data, status='want'){
+  const exists = data.isbn && books.find(b=>b.isbn && b.isbn===data.isbn);
+  if(exists){ toast('이미 서재에 있는 책이에요'); return null; }
+  const now = new Date().toISOString();
+  const b = {
+    id:uid(), title:data.title, authors:data.authors||'', publisher:data.publisher||'',
+    thumbnail:data.thumbnail||'', isbn:data.isbn||'', url:data.url||'',
+    color:data.color || hashColor(data.title), status, quotes:[],
+    addedAt:now, updatedAt:now,
+    startedAt: status!=='want' ? today() : '', finishedAt: status==='done' ? today() : ''
+  };
+  books.push(b); save(); renderStats();
+  toast(`📚 '${b.title.length>14?b.title.slice(0,14)+'…':b.title}'을(를) 꽂았어요`);
+  return b;
+}
+
+/* ---------- 카카오 검색 ---------- */
+const getKey = () => (store.get(API_KEY)||'').trim();
+function renderKeyNotice(){
+  $('#keyNotice').innerHTML = getKey() ? '' :
+    `<div class="notice">🔑 책 검색을 하려면 카카오 REST API 키가 필요해요. <button class="link" id="openSet2">설정에서 키 넣기</button><br><span class="muted">키가 없어도 아래 ‘직접 담기’로 책을 꽂을 수 있어요.</span></div>`;
+  const b = $('#openSet2'); if(b) b.onclick = openSettings;
+}
+let lastQuery = '', page = 1, lastResults = [], isEnd = true, loading = false;
+$('#searchForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('#q').value.trim(); if(!q) return;
+  lastQuery = q; page = 1; lastResults = [];
+  search();
+});
+async function search(){
+  const key = getKey();
+  if(!key){ renderKeyNotice(); toast('먼저 설정에서 API 키를 넣어 주세요'); return; }
+  loading = true; drawResults();
+  try{
+    const url = `https://dapi.kakao.com/v3/search/book?size=20&page=${page}&query=${encodeURIComponent(lastQuery)}`;
+    const res = await fetch(url, {headers:{Authorization:'KakaoAK '+key}});
+    if(res.status===401 || res.status===403) throw new Error('키가 맞지 않아요. 설정에서 REST API 키를 다시 확인해 주세요');
+    if(res.status===429) throw new Error('오늘 검색 횟수를 다 썼어요. 내일 다시 시도해 주세요');
+    if(!res.ok) throw new Error('검색 중에 문제가 생겼어요 ('+res.status+')');
+    const data = await res.json();
+    lastResults = lastResults.concat((data.documents||[]).map(d=>({
+      title:d.title, authors:(d.authors||[]).join(', '), publisher:d.publisher,
+      thumbnail:(d.thumbnail||'').replace(/^http:/,'https:'),
+      isbn:(d.isbn||'').trim(), url:d.url, year:(d.datetime||'').slice(0,4)
+    })));
+    isEnd = !!data.meta?.is_end;
+  }catch(err){
+    lastResults = lastResults.length ? lastResults : [];
+    $('#results').innerHTML = `<div class="notice">😢 ${esc(err.message==='Failed to fetch'?'인터넷 연결을 확인해 주세요':err.message)}</div>`;
+    loading = false; return;
+  }
+  loading = false; drawResults();
+}
+function drawResults(){
+  if(loading && !lastResults.length){ $('#results').innerHTML = `<div class="muted" style="padding:20px;text-align:center"><span class="spinner"></span> 책을 찾고 있어요</div>`; return; }
+  if(!lastResults.length){ $('#results').innerHTML = lastQuery ? `<div class="empty"><div class="big">🔎</div>'${esc(lastQuery)}'(으)로 찾은 책이 없어요.<br>아래 ‘직접 담기’로 꽂을 수 있어요.</div>` : ''; return; }
+  $('#results').innerHTML = `<div class="results">${lastResults.map((r,i)=>{
+    const added = r.isbn && books.some(b=>b.isbn===r.isbn);
+    const fake = {...r, color:hashColor(r.title)};
+    return `<div class="rcard">
+      ${coverHTML(fake)}
+      <div class="info">
+        <div class="ti">${esc(r.title)}</div>
+        <div class="meta">${esc(r.authors||'지은이 미상')}${r.publisher?` · ${esc(r.publisher)}`:''}${r.year?` · ${r.year}`:''}</div>
+        <div class="acts">${added ? '<span class="chip added">✓ 서재에 있어요</span>' :
+          Object.entries(STATUS).map(([s,inf])=>`<button class="chip" data-add="${i}" data-s="${s}">${inf.emoji} ${inf.label}</button>`).join('')}</div>
+      </div></div>`;
+  }).join('')}</div>${!isEnd?`<button class="btn ghost more" id="moreBtn" ${loading?'disabled':''}>${loading?'불러오는 중…':'더 보기'}</button>`:''}`;
+  const m = $('#moreBtn'); if(m) m.onclick = () => { page++; search(); };
+}
+$('#results').addEventListener('click', e => {
+  const a = e.target.closest('[data-add]'); if(!a) return;
+  const r = lastResults[+a.dataset.add]; if(!r) return;
+  if(addBook(r, a.dataset.s)) drawResults();
+});
+
+/* 직접 담기 */
+let mColor = null;
+$('#mSwatches').innerHTML = SPINES.map((c,i)=>`<button type="button" class="swatch" data-c="${c}" style="background:${c}" aria-label="색 ${i+1}"></button>`).join('');
+$('#mSwatches').addEventListener('click', e => {
+  const s = e.target.closest('.swatch'); if(!s) return;
+  mColor = s.dataset.c;
+  document.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('on', x===s));
+});
+$('#manualForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = $('#mTitle').value.trim(); if(!title) return;
+  addBook({title, authors:$('#mAuthor').value.trim(), publisher:$('#mPub').value.trim(), color:mColor||undefined}, $('#mStatus').value);
+  e.target.reset(); mColor=null; document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('on'));
+});
+
+/* ---------- 설정 ---------- */
+function openSettings(){
+  const k = getKey();
+  $('#keyInput').value = '';
+  $('#keyState').textContent = k ? `저장된 키: ${k.slice(0,4)}••••••${k.slice(-3)}` : '아직 저장된 키가 없어요';
+  $('#setModal').classList.add('on');
+}
+$('#btnSettings').onclick = openSettings;
+$('#keySave').onclick = () => {
+  const v = $('#keyInput').value.trim().replace(/^KakaoAK\s+/i,'');
+  if(!v){ if(getKey() && confirm('저장된 키를 지울까요?')){ store.del(API_KEY); openSettings(); toast('키를 지웠어요'); } return; }
+  store.set(API_KEY, v); openSettings(); renderKeyNotice(); toast('🔑 키를 저장했어요');
+};
+$('#exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify({app:'chaekmat', version:1, exportedAt:new Date().toISOString(), books}, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `책맛서재-백업-${today()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+};
+$('#importBtn').onclick = () => $('#importFile').click();
+$('#importFile').onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const data = JSON.parse(await f.text());
+    const list = Array.isArray(data) ? data : data.books;
+    if(!Array.isArray(list)) throw 0;
+    if(!confirm(`백업에서 책 ${list.length}권을 불러올까요?\n지금 서재 내용은 백업 내용으로 바뀌어요.`)) return;
+    books = list.filter(b=>b && b.id && b.title); save(); closeModals(); toast('💾 백업을 불러왔어요');
+  }catch(_){ toast('백업 파일을 읽지 못했어요'); }
+  e.target.value = '';
+};
+
+let rT; window.addEventListener('resize', ()=>{ clearTimeout(rT); rT=setTimeout(()=>{ if(view==='shelf') renderShelf(); },200); });
+render();
+})();
+</script>
+</body>
+</html>
